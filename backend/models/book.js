@@ -4,7 +4,7 @@ const BookSchema = new Schema({
 	title: {type: String, required: true},
 	author: {type: String, required: true},
 	isbn: {type: String, required: true},
-	imagePath: {type: String, required: true}, // la ruta de la imagen para hacerlo más eficiente
+	imagePath: {type: String}, // la ruta de la imagen para hacerlo más eficiente
 	created_at: {type: Date, default: Date.now}
     })
     

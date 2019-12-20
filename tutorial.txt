@@ -191,7 +191,7 @@ const BookSchema = new Schema({
 	title: {type: String, required: true},
 	author: {type: String, required: true},
 	isbn: {type: String, required: true},
-	imagePath: {type: String, required: true}, // la ruta de la imagen para hacerlo más eficiente
+	imagePath: {type: String}, // la ruta de la imagen para hacerlo más eficiente, de momento no lo requerimos para configurarlo más fácil cuándo hagamos posts iniciales
 	created_at: {type: Date, default: Date.now}
 	})
 
@@ -239,3 +239,60 @@ EMPEZAMOS A DISEÑAR LA RESTAPI
 https://www.youtube.com/watch?v=c4mzLwZNCgQ
 
 utilizaremos postman para desarrollo, sirve para poder enviar peticiones get, post etc sin tener la interfaz creada, una vez funcionando crearemos esta interfaz
+en el index estamos indicando en //routes "app.use('/api/books', require('./routes/books'));" lo que quiere decir que en el navegador al poner api/books iremos al routes/books
+	de momento estamos enviando un hello world a través de "router.get('/',(req,res)=>res.json({text:'Hello world'}));" esto tenemos que cambiarlo para enviar lo datos desde mongodb
+	requerimos el modelo de los libros y lo guardamos en una constante
+		const Book = require('../models/books');
+	eliminamos el hello world y hacemos una consulta de todos los books en mongodb
+		router.get('/',(req, res) => {
+			Book.find();    // busca y devuelve todos los libros que tenemos en la bbdd
+		});
+	como es una consulta asíncrona debemos usar el async/await creando una variable y devolviendola después del await con el json
+		router.get('/',async (req, res) => {
+			const books = await Book.find();    // busca y devuelve todos los libros que tenemos en la bbdd
+			res.json(books);
+		});
+	ahora ya nos debe devolver un arreglo vacío al entrar al localhost:3000/api/books ya que no tenemos ningun dato guardado en javascriptdb
+Para guardar en la bbdd utilizaremos postman, enviando un post con un json con los datos que queramos almacenar, pero primero crearemos la ruta con el metodo post y dentro para empezar mostraremos los datos
+	router.post('/',async (req,res)=>{
+		console.log(req.body);
+		res.send('recived');
+	});
+	entonces cuando con postman entremos a la ruta pero con post veremos un recived y en consola vemos el objeto que le hemos enviado ('hasta ahora un objeto vacío')
+	vamos a headers en postman y en headers vamos a pooner en key content-type y en value application/json y en el body seleccionamos raw y enviamos el json {"text": "Hello world"}
+entonces nos leerá todos los datos que le pongamos, como habiamos pedido en la template books title, author y isbn (porque fecha se autocompletará) vamos a mandar esos datos
+	{"title": "I Robot", "author":"Isaac Asimov", "isbn": "asdf34f34f34"}
+como nos llegan por consola quiere decir que están bien enviados, los capturamos y los guardamos
+	router.post('/',async (req,res)=>{
+		const {title,author,isbn} = req.body;
+		const newBook = new Book({title, author,isbn});
+		console.log(newBook);
+		res.send('recived');
+	});	
+si reenviamos el post vemos que ahora por consola nos sale el mismo libro pero ahora con los datos de _id que nos los crea mongo y el created_at: que en el modelo de libro hicimos que se hiciese solo
+	para que en vez de mostrarse por consola se guarde usaremos newBook.save() con el await delante ya que es asincrono
+	y la respuesta que enviaremos sera un json con el mensaje de llibro guardado
+		router.post('/', async(req,res)=>{
+		    const {title, author, isbn} = (req.body);
+		    const newBook = new Book({title, author, isbn});
+		    await newBook.save();
+		    res.json({message:'book saved'});
+		});
+ahora si enviamos lo mismo con postman nos saldrá el json con el message book saved y en la consola no debe dar error, si entramos en el navegador ya debemos ver el json con los datos que ya deberian estar gusardados.
+podemos guardar tantos como queramos con el método post y con el método get veremos el listado
+ahora para eliminar crearemos la ruta con el metodo delete, pasando en la ruta el id del libro que quiro eliminar (ahora copiamos en postman el id al final de la rutam luego ya lo haremos desde la interfaz)
+	en las rutas creamos la ruta con el método delete y seleccionamos y eliminamos con el método findByIdAndDelete
+		router.delete('/:id', async (req, res) => {
+			const book = await Book.findByIdAndDelete(req.params.id);
+			console.log(book); //para ver por consola el libro que hemos eliminado
+			res.send('deleted');
+		});
+		--> Mejor mandar el deleted con json res.json({message: 'Book deleted'});
+		--> No hace falta el console.log para mostrar por pantalla el libro creado
+		--> No hace falta guardar en una variable el book (de hecho solo era para el console.log
+	podemos comprobar como se elimina con el navegador en localhost:3000/api/books
+
+NOS ENFOCAMOS EN EL FRONTEND
+https://www.youtube.com/watch?v=z3OyqCE_J64
+podemos cerrar el servidor y centrarnos en la carpeta del frontend, lo haremos con webpack, que coge todos los archivos y los empaqueta (todo tipo de archivo lo acaba convirtiendo a css, js, jpg o png) reduciendo el peso y uniendo todos los archivos en uno etc "optimiza"
+
