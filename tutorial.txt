@@ -295,4 +295,18 @@ ahora para eliminar crearemos la ruta con el metodo delete, pasando en la ruta e
 NOS ENFOCAMOS EN EL FRONTEND
 https://www.youtube.com/watch?v=z3OyqCE_J64
 podemos cerrar el servidor y centrarnos en la carpeta del frontend, lo haremos con webpack, que coge todos los archivos y los empaqueta (todo tipo de archivo lo acaba convirtiendo a css, js, jpg o png) reduciendo el peso y uniendo todos los archivos en uno etc "optimiza"
+	npm i webpack webpack-cli html-webpack-plugin css-loader style-loader mini-css-extract-plugin webpack-dev-server timeago.js -D
+		webpack-cli	
+		html-webpack-plugin	para que sepa como mover los archivos html
+		css-loader		para cargar css dentro de js
+		style-loader
+		mini-css-extract-plugin	minificar el css
+		webpack-dev-server	nos permite trabajar en desarrollo
+		timeago.js		para poder poner fechas en base a hace tres horas
+		-D para instalar las dependencias en modo desarrollo, luego ya convertiremos todo en codigo al public con el webpack
+mientras todo se está instalando podemos ir creando en la carpeta del frontend creamos el index.html, app.js, UI.js y las carpetas styles, models y services
+Ahora deberíamos tener todos los módulos en dev dependencies dentro del package.json
+
+https://www.youtube.com/watch?v=gtkdxLgHIhg
+
 
