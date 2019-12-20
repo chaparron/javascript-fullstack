@@ -1,0 +1,241 @@
+INSTALACIÓN Y CONFIGURACIÓN
+Fazt code  -> https://www.youtube.com/watch?v=IR5FXX7a_rM&list=PLo5lAe9kQrwq7n_REwpZdfggPCBW2ggnh&index=2
+
+necesitamos node para el proyecto que se instala facil con la terminal
+
+creamos la carpeta y la arrastramos al editor
+
+creamos un directorio para el backend y otro para el frontend
+
+abrimos la terminal dentro del editor
+
+creamos el package.json con npm init -y
+
+instalamos el framework express con algunas extensiones
+
+	npm i express mongoose morgan multer dotenv cross-env cors
+	-express	framework mas minimalista
+	-mongoose	módulo para conectarnos a la bbdd
+	-morgan 	para ver las peticiones que van llegando al servidor
+	-multer		para subir imagenes al servidor sin tener que escribir todo el codigo
+	-dotenv		para trabajar con las variables de entorno (guardar contraseñas y que no esten en el código)
+	-cross-env	para definir en que entorno estamos
+	-cors		para utilizar dos servidores
+
+Si no se hace solo en package.json añadimos un array de las depencias que hemos creado
+	,	
+	"dependencies":{
+	"cors": "2.8.5",
+	"cross-env": "6.0.3",
+	...
+	},
+
+cremaos dentro del backend una carpeta para modelos y otra para las rutas "models" y "routes"
+
+También dentro del backend un archivo database.js y otro index.js
+
+instalamos el módulo fs-extra para no tener que usar callbacks ya que asi se pueden usar promesas (pudiendo utilizar async away)
+	npm i fs-extra
+
+
+empezamos trabajo en el index
+	exportamos el modulo de express y lo guardamos en una constante
+		const express =  requiere('express)';
+	inicializamos express y lo guardamos en una constante que será la app del servidor
+		//Initializations
+		const app = express(); 
+	inciamos el servidor
+		//Start the server
+		app.listen()
+	necesitamos un puerto para iniciar el servidor por lo que encima de la linea anterior definimos el puerto
+		//Settings
+		app.set('port', 3000);
+	como ahora sí tenemos definido el puerto en la variable port la añadimos a app.listen
+		app.listen(app.get('port'));
+	una vez inicia el servidor definimos lo que haremos al iniciar
+		app.listen(app.get('port), () => {
+			console.log('Server on port, app.get('port'));
+		})
+
+ejecutamos en la consola el index del backend para comprovar que todo ha salido bien
+	node backend/index.js  -->Debería responder Server on port 3000
+
+para navegar en nuestra app hay que entrar en localhost:3000, pero de momento no hemos definido direcciones y nos devolverá cannot get /  lo que significa que el exprés está bien configurado
+
+
+https://www.youtube.com/watch?v=VOx3iON96ew&list=PLo5lAe9kQrwq7n_REwpZdfggPCBW2ggnh&index=3
+UILIZAR EL RESTO DE MODULOS Y CONFIGURAMOS SERVIDOR
+	
+requerimos morgan y lo guardamos en una constante
+	const morgan = require('express');
+
+en una nueva sección (Middlewares) utilizamos el módulo morgan como una función en modo dev
+	//Middlewares
+	app.use(morgan('dev'));
+
+reiniciamos el servidor con ctrl c en la terminal
+instalamos modulo nodemon con npm i nodemon -D (para hacer más faciles los reinicios del servidor) con -D al final lo instalamos como dependencia de desarrollo para que no se exporte luego con el proyecto
+arrancamos el servidor con nodemon en vez de node ya que ahora está instalado
+	npx nodemon backend/index.js  -> utilizamos npx ya que la instalacion de nodemon no ha sido local
+si no nos funciona (no existe npx) instalamos npx con la terminal en teoria viene directamente con las últimas versiones de npm pero node aún no trae las últimas
+	sudo npm i -g npx
+para ahorrarnos escribir la ruta todo el rato, podemos ir a scripts dentro de package.json borramos el test y añadimos
+	"dev": "nodemon backend/index.js" 
+ahora podremos arrancar nodemon escribiendo en consola
+	npm run dev
+
+Con morgan ahora podemos entrar en el navegador localhost:3000 y veremos en consola las peticiones, en nuestro caso:
+	GET / 404 4.960 ms - 139
+	ha habido una peticion GET al root, codigo 404 ha mandado el servidor, ms de respuesta y peso de la respuesta
+
+requerimos y guardamos en una constante multer
+	const multer = require('multer')
+
+usamos multer en middlewares
+	app.use(multer());
+
+Para poder usar multer hay que configurarlo antes (en la linea anterior del use multer)
+	multer.diskStorage({
+		destination: 'public/uploads'  //directorio donde se guardaran las imagenes
+		})	
+	para que entienda en que directorio esta hay que requerir path
+		const path = require('path');		
+	en destination habría que usar path y __dirname (básico de node es el directorio actual) si no está la carpeta la crea
+		destination: path.join(__dirname, 'public/uploads')
+	añadimos también filename al array de diskStorage que es una función
+		filename(req,file,cb){
+			cb(null,new Date().getTime() + path.extname(file.originalname)); );
+		}
+		** newDate().getTime() para nombre de archivo
+		** pa th.extname(file.originalname) para la extension
+	lo guardamos todo en una constante
+		const storage = multer.diskStorage({
+			destination: path.join(__dirname, 'public/uploads'),
+			filename(req,file,cb){
+				cb(null, new Date().getTime() + path.extname(file.originalname));
+				}
+			})
+para saber lo que devuelve un javascript abrimos una consola nueva y ponemos "node" (interprete directo sin porgrama, para probar cosas de javascript, por ejemplo new Date().getTime() que lo hemos utilizado para poner un nombre aleatorio en filename
+
+ahora en multer ya podemos pasar la configuración
+	app.use(multer({storage}).single('image'));
+	**single('Image') para decir que subiremos una sola imagen
+
+añadimos el middleware de express para interpretar los formularios en json urlencoded
+	app.use(express.urlencoded({extended:false}));
+como será una app de una sola página que no recargará añadimos json para entender ajax
+	app.use(express.json());
+
+CREAMOS LAS RUTAS
+https://www.youtube.com/watch?v=0Clbi-8EiLw&list=PLo5lAe9kQrwq7n_REwpZdfggPCBW2ggnh&index=4
+
+Creamos un archivo dentro de routes "books.js"
+en el archivo books.js requerimos express para usar el método router , guardarlo en una constante y exportarla
+	const {Router} = require('express');
+	const router = Router();
+	module.exports = router;
+
+-->Para enroutar la app utilizaremos:
+-->	dentro de nuestro index creamos otra sección
+-->		//Routes
+-->		app.use(require('./routes/books'));
+-->
+-->	y en books antes de exportar la variable creamos la ruta
+-->		router.get('/',(req, res) => res.send('Hello world'));
+Como haremos una API tenemos que mandar sólo datos en jsons por lo tanto usaremos
+	app.use('/api/books', require('./routes/books'));
+	router.get('/',(req, res) => res.json(text:'Hello world'));
+
+Las carpetas de node son privadas por defecto para dar seguridad a los archivos, para dar acceso al navegador en index colocamos otra seccion
+	//Static files
+	app.use(express.static(path.join(__dirname, 'public')));
+
+-->Dentro de public ya podemos crear un index que ahora si podrá ver el navegador en localhost:3000/index.html (sin index.html también entrará por defecto ahi)
+-->podemos también crear un css y linkarla con     <link rel="stylesheet" href="/index.css">
+-->No los creamos porque lo haremos más adelante desde webpack en el frontend y ya se convertirá en html, css y js
+
+
+CONFIGURAMOS LA BBDD CON MONGO
+https://www.youtube.com/watch?v=NsiGIt9HVBM
+
+requerimos mongodb
+
+en el archivo de database.js requerimos mongoose y nos conectamos
+	const mongoose = require('mongoose');
+	mongoose.connect(); 
+
+en la consola arrancamos el proyecto fazt dice sudo service mongod start, en realidad ha funcionado sudo mongod
+--> si sale error 100 es porque falta la carpeta /data/db la creamos (sudo mkdir -p /data/db) y nos aserguramos que tenga permisos para escritura (sudo chown -R `id -un` /data/db)
+--> si sale error 48 es porque el puerto que usa mongo esta ocupado y lo tenemos que arrancar con otro puerto (mongod --port 27018)
+
+en mongoose connect usamos el protocolo mongodb para conectarnos al localhost y asignamos nombre a la bbdd (cuando guardemos datos la creara) y añadimos la configuración (de momento guardamos la cadena directamente, en realidad hay que hacerlo con variables de entorno por seguridad)
+	mongoose.connect('mongodb://localhost/javascriptdb',{
+		useNewUrlParser:true
+    		useUnifiedTopology: true, 
+	})
+		.then(db=>console.log('DB is connected')) //si todo va bien
+		.catch(err =>console.error(err)); //si lanza un error
+
+en inicializaciones requerimos el archivo database
+	require('./database');
+
+y si todo ha ido bien por consola deberiamos ver DB is connected en la terminal y ya podemos guardar datos
+
+para definir el modelo de nuestra app iremos a modelos y creamos un archivo books.js y así decimos que datos guardamos de cada libro
+primero requerimos mongoose, sólo necesitamos Schema y model
+	const {Schema, model} = require('mongoose');
+
+Creamos un Schema que servirá para compararse con un nuevo libro cuando lo creemos 
+
+const BookSchema = new Schema({
+	title: {type: String, required: true},
+	author: {type: String, required: true},
+	isbn: {type: String, required: true},
+	imagePath: {type: String, required: true}, // la ruta de la imagen para hacerlo más eficiente
+	created_at: {type: Date, default: Date.now}
+	})
+
+exportamos el modelo, que requiere un nombre y un schema
+	module.exports = model('Book', BookSchema);
+
+CAMBIAR VARIABLES DE ENTORNO
+https://www.youtube.com/watch?v=gTZmRwzzDlM
+
+en database eliminamos la cadena para poner todas las variables en el documento .env que lo creamos en la carpeta raíz del proyecto
+creamos la variable MONGODB_URI=mongodb://localhost/javascriptdb
+definimos que estamos en entorno de desarrollo con dotenv y que estamos usando el .env en el index, antes de que empiece todo el codigo
+	require('dotenv').config();
+para asegurarnos que esta bien configurado, en database.js comentamos en database el mongoose.connect y hacemos un console.log de la variable para ver di nos muestra la cadena
+	cnosole.log(process.env.MONGODB_URI) --> en consola mongodb://localhost/javascriptdb
+Una vez sabemos que está bien configurado lo añadimos al mongoose.connect
+	mongoose.connect(process.env.MONGODB_URI,{
+    		useUnifiedTopology: true,
+    		useNewUrlParser: true,
+		})
+    		.then(db=>console.log('DB is connected')) //si todo va bien
+    		.catch(err =>console.error(err)); //si lanza un error
+para que las variables y configuraciones no sean accesibles en git, añadimos el .env al .gitignore que lo creamos en la raíz y de paso el node_modules
+
+Se pueden crear las variables que queramos en el .env y luego las podremos usar con el process.env.variable por ejemplo el puerto
+	PORT = 4000  --> ¡No llevan ; al final de las declaraciones de variables!
+y la usamos en //settings del index.js sustituyendo al 3000 que teniamos, ahora en consola veremos el server en port 4000
+	lo suyo es hacer app.set('port',process.env.PORT || 3000); entonces si no tenemos un puerto definido usaremos el "3000" servicios donde desplegamos la app nos dan un puerto definido y así ya estamos validando para cuando nos den el puerto definido
+	de momento eliminamos la variable port en el .env, solo era para comprovar que cuando nos lo den funcionará
+con cross_env definimos el despliegue de la app en desarollo y en produccion en los scripts del package.json
+	"dev": "cross-env NODE_ENV=development nodemon backend/index.js",
+	"start":"cross-env NODE_ENV=production node backend/index.js"
+ahora si en el index hacemos un console.log del NODE_ENV, nos dirá en que estado se encuentra el proyecto development/production
+	console.log(process.env.NODE_ENV);
+		-->npm run dev mostrará development
+		-->npm start mostrará production   (no necesitamos el run porque start es una de las ordenes básicas)
+al principio del index.js creamos un condicional para que requiera el dotenv sólo cuando estemos en desarrollo
+	if(proces.env.NODE_ENV === 'development'){
+		require('dotenv').config();
+	}
+ahora sólo nos funcionará en desarrollo, ya que si le damos a npm start y se pone en producción, no usará dotenv, no leerá el archivo .env y por lo tanto no tendrá las variables
+cuando despleguemos, nos dejarán definir las variables desde una interfaz
+
+EMPEZAMOS A DISEÑAR LA RESTAPI
+https://www.youtube.com/watch?v=c4mzLwZNCgQ
+
+utilizaremos postman para desarrollo, sirve para poder enviar peticiones get, post etc sin tener la interfaz creada, una vez funcionando crearemos esta interfaz
