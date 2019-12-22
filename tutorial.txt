@@ -308,5 +308,79 @@ mientras todo se está instalando podemos ir creando en la carpeta del frontend 
 Ahora deberíamos tener todos los módulos en dev dependencies dentro del package.json
 
 https://www.youtube.com/watch?v=gtkdxLgHIhg
+CONFIGURAR WEBPACK
+primero creamos un archivo en la raiz con el nombre webpack.config.js
+queremos que mueva el código origen a public (lo guardaremos en un archivo que llamaremos bundle.js), requerimos path primero para poder poner las rutas
+	const path = require('path');
+	module.exports = {
+		entry: './frontend/app.js',
+		output: {
+			path: path.join(__dirname, 'backend/public'),
+		filename: 'bundle.js'
+		}
+	}
+	-->comprovamos que funciona creando un alert en el app.js del frontend
+		alert('works!');
+	--> npx webpack en consola y vemos como se generá el archivo bundle.js y es un archivo de una linea comprimido
+		si en config del webpack escribimos algo mal nos va a decir que no reconoce los comandos en consola
+	como el código generado se guarda en public podemos acceder a el corriendo el servidor con npm run dev en consola, pero si vamos a nuestra dirección (localhost:3000/bundle.js) solo veremos el código, necesitamos en config utilizar también un html
+		usamos html-webpack-plugin
+			const HtmlWebpackPlugin = require('html-webpack-plugin');
+		dentro del export de la config de webpack añadimos la sección plugins y añadimos HtmlWebpackPlugin con su configuración en un array
+			const path = require('path');
+			const HtmlWebpackPlugin = require('html-webpack-plugin');
+				module.exports = {
+					entry: './frontend/app.js',
+					output: {
+						path: path.join(__dirname, 'backend/public'),
+						filename: 'js/bundle.js'
+						},
+					plugins: [
+						new HtmlWebpackPlugin({
+							template: './frontend/index.html'
+						})
+					]
+				};
+		--> si corremos webpack de nuevo npx webpack veremos como modifica también el index public del backend
+		--> como por defecto localhost:3000 lee el index y este con webpack esta enlazado al bundle, nos leerá directamente la aplicación y nos saldrá el alert
+		--> podemos alterar el código del index del frontend, que luego webpack ya lo modificará para el backend con el script y será el que se vez por el navegador
+		--> a la configuración del Htmlwebpackplugin le añadiremos minify con sus características para que nos comprima el código, lo añadimos dentro del array después de template
+			minify:{
+				collapseWhitespace: true,
+				removeComments: true,
+				removeRedundanttributes: true,
+				removeScriptTypeAttributes: true,
+				removeStyleLinkAttributes: true,
+				useShortDoctype: true
+				}
+		--> Para comprovar que minifica podemos crear una estructura básica en el frontend, correr webpack y mirar el código minificado en el backend
+	ya tenemos html y js ahora dentro de la config del webpack usaremos style-loader y css-loader, antes de plugins añadimos:
+		module: {
+			rules:[
+				{
+				test: /\.css/,
+				use: [
+					'style-loader',
+					'css-loader'
+					]
+				}
+			]
+		},
+	-->entonces en el frontend creamos una carpeta styles y dentro creamos el style.css con algunos estilos.
+		--> como funciona todo a base de js, requerimos el css con el app.js y no con el index
+			require('./styles/styles.css');
+		--> nos coloca los estilos de css en el app.js del backend y en produccion no nos interesa
+		debemos indicar que estamos en producción con cross-env
 
+/** voy por aquí, 14:25 vídeo  **/
 
+			cross-env NODE_ENV=production webpack   --> lo metemos en un script llamado build dentro del packaje json 
+		en la configuración del webpack requeriremos el modulo mini-css-extract-plugin y lo usaremos si no estamos en producción, para eso guardamos en una constante un true cuando el NODE_ENV sea diferente a production
+			const MiniCssEstractPlugin = require('mini-css-extract-plugin');
+			const devMode = process.env.NODE_ENV !== 'production';
+			use: [
+				devMode? 'style-loader: MiniCssExtractPlugin.loader,  // si devMode true (no estamos en producción) usara style-loader, si estamos en producción usará MiniCssExtractPlugin
+			por último en los plugins de webpack config añadimos y configuramos MiniCssExtractPlugin
+				new MiniCssExtractPlugin({
+					filename: 'css/bundle.css'
+				})
