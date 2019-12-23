@@ -473,6 +473,93 @@ creamos la interfaz, en nuestro caso:
 
 Para personalizar nuestro bootstrap, vamos a bootswatch.com, elegimos el tema que nos guste, le damos a Ctrl+download y copiamos el enlace, que lo pondremos en el href de una etiqueta link y eliminaremos el enlae anterior a bootstrap
 
-https://www.youtube.com/watch?v=hO9993I520E&t=22s
+https://www.youtube.com/watch?v=hO9993I520E
 CAPTURAMOS EVENTOS
+
+en app.js del frontend iremos capturando los eventos del formulario
+document.getElementById('book-form')
+	.addEventListener('submit', e=>{
+	const title = document.getElementById('title').value;
+	const author = document.getElementById('author').value;
+	const isbn = document.getElementById('isbn').value;
+	const image = document.getElementById('image').files;
+	
+	console.log(title, author, isbn, image);
+	});
+entramos en el navegador "localhost:8080" en nuestro caso, enviamos el formulario y vemos si se capturan los datos, no se hará porque por defecto al hacer submit se reinicia la pag
+	--> podemos marcar registros persistentes ene la consola para que no desaparezcan
+	--> tenemos que quitar el reload de la pagina por defecto del submit  "e.preventDefault();
+		-->ahora no recarga la página (ni guarda los datos en mongo ni borra el formulario)
+En services creamos el js BookService  (un service es una clase que reutilizaremos en toda la app)
+	--> Creamos la clase, creamos el constructor con la propiedad this.URI (no hace falta este nombre) y esta en 'http://localhost:3000/uri/books'
+	--> creamos los tres métodos que utilizaremos guardar post, delte borrar, y get para ver
+	--> para ver, peticion get a this.uri, si no ponemos que petición es, por defecto es get, como es asincrona utilizamos el async await, convertimos los datos a un json y lo devolvemos con return
+	--> para guardar, hacemos la petición a this-URI con el fetch y aquí descrivimos que es con el method 'POST', body: book. Utilizamos el await y guardamos todo en una constante (res) y la conveertimos a json con res.json()		
+	--> para Delete, además de api/books hay que añadir /idlibro, por lo que concatenamos '$(this.URI)/$(bookId)' dentro del fetch y le añadimos que es el método delete y de Content-Type ponemos application/json y como tomará tiempo añadimos el async/await, gurdamos todo en una variable y la convertimos a json y le hacemos console.log
+	--> exportamos
+Bookservice.js queda
+class BookService {
+
+    constructor() { 
+        this.URI = `/api/books`;
+    }
+
+    async getBooks() {
+        const response = await fetch(this.URI);    
+        const books = await response.json();
+        return books;
+    }
+
+    async postBook(book) {
+        const res = await fetch(this.URI, {
+            method: 'POST',
+            body: book
+        });
+        const data = await res.json();
+    }
+
+    async deleteBook(bookId) {
+        const res = await fetch(`${this.URI}/${bookId}`, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            method: 'Delete'
+        });
+        const data = await res.json();
+        console.log(data);
+    }
+
+}
+
+export default BookService;
+
+
+
+	}
+
+Desde app.js importamos (import BookService from './services/BookService';)
+-->borramos el console.log e instanciamos la clase
+	const bookService = new bookService();
+	bokkService.postBook(); //hay que crear el objeto book que enviaremos
+-->creamos un formulario virtual donde guardemos todos los datos del libro
+	const formData = new formData();
+	formData.append('title',title);
+	formData.append('author',author);
+	formData.append('isbn',isbn);
+	formData.append('image',image[0]);
+-->enviamos el formData (en BookService.js podemos colocar un console.log(data) para ver que nos está devolviendo
+	bookService.postBook(formData)
+--> hay que importar y utilizar el módulo cors en index.js del backend
+	const cors = require('cors');
+	app.use(cors()); //en Middlewares
+--> ahora ya se guardan los libros que enviemos a través del formulario (en la carpeta public uploads podemos ver las imágenes)
+pero si vamos a las rutas, en post, vemos como estamos guardando el title, author e isbn, pero no la imagen, ya que no seria una bbdd eficiente, hay que guardar la dirección de la imagen
+	--> agregamos un campo más, haciendo un req.file que recivo gracias a multer y es donde estará la imagen
+		const imagePath = '/uploads/' + req.file.filename;
+	--> añadimos el imagePath a las constates del new book
+		const new Book = new Book({title, author, isbn, imagePath});
+ahora si vamos a localhost:3000/api/books veremos como si se guarda el imagePath
+
+https://www.youtube.com/watch?v=cpIIANXEXaI
+EMPEZAMOS A CAPTURAR EL RESTO DE EVENTOS Y MANEJAMOS LA INTERFAZ CON UI
 

@@ -6,6 +6,7 @@ const express = require('express'); //el framework minimalista que utilizaremos
 const morgan = require('morgan'); //para ver las peticiones
 const multer = require('multer'); //para subir las imagenes sin picar todo el código
 const path = require('path'); //para ayuda en directorios
+const cors = require('cors');
 
 //inicialitions
 const app = express();
@@ -25,6 +26,8 @@ const storage = multer.diskStorage({
 app.use(multer({storage}).single('image'));
 app.use(express.urlencoded({extended:false}));
 app.use(express.json());
+app.use(cors());
+
 
 //routes
 app.use('/api/books', require('./routes/books'));
