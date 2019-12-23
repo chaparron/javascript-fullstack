@@ -372,8 +372,6 @@ queremos que mueva el código origen a public (lo guardaremos en un archivo que 
 		--> nos coloca los estilos de css en el app.js del backend y en produccion no nos interesa
 		debemos indicar que estamos en producción con cross-env
 
-/** voy por aquí, 14:25 vídeo  **/
-
 			cross-env NODE_ENV=production webpack   --> lo metemos en un script llamado build dentro del packaje json 
 		en la configuración del webpack requeriremos el modulo mini-css-extract-plugin y lo usaremos si no estamos en producción, para eso guardamos en una constante un true cuando el NODE_ENV sea diferente a production
 			const MiniCssEstractPlugin = require('mini-css-extract-plugin');
@@ -384,3 +382,14 @@ queremos que mueva el código origen a public (lo guardaremos en un archivo que 
 				new MiniCssExtractPlugin({
 					filename: 'css/bundle.css'
 				})
+	añadimos al final del module exports una linea que ponga " devtool: 'source-map'" para que cuando haya un error nos diga en que linea ha sido
+
+Ahora ya se están generando las carpetas en el backend desde el frontend, cada una en su sitio y dependiendo de si estamos en desarroyo o producción
+	modificamos el script "dev" para que no se reinicie cuando modificamos algo del frontend, añadimos  --ignore frontend
+--> podemos eliminar la carpeta public del backend que se nos generará (si está corriendo el servidor) con multer al guardar el index.js del servidor
+--> del frontend podemos eliminar el app.js y los css ya que estaban para comprovar que se iba generando todo bien, ahora crearemos los buenos.
+
+
+https://www.youtube.com/watch?v=mX6NwOwTlzk
+
+
