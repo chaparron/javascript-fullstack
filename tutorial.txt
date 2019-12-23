@@ -391,5 +391,88 @@ Ahora ya se están generando las carpetas en el backend desde el frontend, cada 
 
 
 https://www.youtube.com/watch?v=mX6NwOwTlzk
+INSTALAMOS MÓDULOS PARA INSTALAR UNA INTERFAZ
+-->en styles del frontend, cambiamos el nombre del styles.css a app.css
+-->en app.js debemos requerir el css "require('./styles/app.css');" o con emmascript más abreviado "import './styles/app.css';
+empezamos con un framework de css, bootstrap, copiamos el css y lo metemos debajos del title en el index.html debajo del título
+añadimos el cdn dentro del github de animate css también en el head del index.html
+creamos dentro del body una navegación sencilla de bootstrap
+	    <nav class="navbar navbar-dark bg-dark" >
+		<div class="container">
+		    <a href="/" class="navbar-brand">Books APP</a>
+		</div>
+	    </nav>
+compilamos el código con npm run build y comprovamos que se nos generan en public del frontend los archivos en sus carpetas js y css y el html
+para no tener que estar poniendo todo el rato el npm run build generamos otro script que nos tenga el webpack-dev-server activo
+	"server-dev":"webpack-dev-server"
+nos fijamos en que servidor nos lo crea y podemos entrar con el localhost:**** en mi caso ha sido 8080 y si hacemos cambios se verán en el navegador
+	-->usaremos entonces el "8080" para el desarrollo de la interfaz y el 3000 para los datos, que no se actualizará sin build
+tenemos el aviso en consola de que no hemos configurado el modo para webpack, aunque nos explica bien como hacerlo	
+	**WARNING in configuration
+	The 'mode' option has not been set, webpack will fallback to 'production' for this value. Set 'mode' option to 'development' or 'production' to enable defaults for each environment.
+	You can also set it to 'none' to disable any default behavior. Learn more: https://webpack.js.org/configuration/mode/
+		-->en la configuración del webpack ponemos mode:'development', en el array de module.exports
+creamos la interfaz, en nuestro caso:
 
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Computer Products</title>
+  <link rel="stylesheet" href="https://bootswatch.com/4/cosmo/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
+
+</head>
+
+<body>
+
+  <!-- NAVIGATION -->
+  <nav class="navbar navbar-dark bg-dark">
+    <div class="container">
+      <a class="navbar-brand" href="/">Books App</a>
+    </div>
+  </nav>
+
+  <div class="container p-4" id="app">
+    <div class="row">
+      <div class="col-md-4">
+
+        <form id="book-form" class="card card-body">
+          <div class="form-group">
+            <input type="text" id="title" class="form-control" placeholder="Book Title" autofocus>
+          </div>
+          <div class="form-group">
+            <input type="text" id="author" class="form-control" placeholder="Author">
+          </div>
+          <div class="form-group">
+            <input type="text" id="isbn" class="form-control" placeholder="ISBN">
+          </div>
+          <div class="input-group mb-3">
+              <div class="custom-file">
+                <input type="file" class="custom-file-input" id="image" required>
+                <label class="custom-file-label" for="image" aria-describedby="inputGroupFileAddon02">Choose Image</label>
+              </div>
+            </div>
+          <button type="Submit" class="btn btn-primary">
+            Save Book
+          </button>
+        </form>
+      </div>
+
+      <div class="col-md-8" id="books-cards">
+      </div>
+
+    </div>
+
+  </div>
+
+</body>
+
+</html>
+
+Para personalizar nuestro bootstrap, vamos a bootswatch.com, elegimos el tema que nos guste, le damos a Ctrl+download y copiamos el enlace, que lo pondremos en el href de una etiqueta link y eliminaremos el enlae anterior a bootstrap
+
+https://www.youtube.com/watch?v=hO9993I520E&t=22s
+CAPTURAMOS EVENTOS
 
