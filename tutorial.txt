@@ -563,3 +563,90 @@ ahora si vamos a localhost:3000/api/books veremos como si se guarda el imagePath
 https://www.youtube.com/watch?v=cpIIANXEXaI
 EMPEZAMOS A CAPTURAR EL RESTO DE EVENTOS Y MANEJAMOS LA INTERFAZ CON UI
 
+creamos la clase ui de nuestro frontend para tener el manejo de la interfaz (borrar formulario etc), añadimos sus métodos y la exportamos
+	class UI{
+	renderBooks(){}
+	addNewBook(){}
+	clearBookFrom(){}
+	renderMessage(){}
+	deleteBook(){}
+	}
+	export default UI;
+
+vamos a quitar el postbook de app.js porque ahora lo haremos desde aquí y ya no hace falta importar bookservice
+	--> tenemso que importar en app.js la clase UI (import UI from './UI';) guardarlo en una constante const ui = new UI(); y luego ir usando los métodos pasándo el formData
+importamos desde UI.js el bookservice
+	-->en addNewBook usaremos la constante pasandole el book, cómo es un método async lo ponemos y le pasamos el await
+		import BookService from './services/bookService';
+		const bookService = new BookService();
+
+		class UI{
+		    	renderBooks(){}
+			async addNewBook(book){
+		        await bookService.post(book);
+		    	}
+			clearBookFrom(){}
+			renderMessage(){}
+			deleteBook(){}
+		}
+		export default UI;
+
+en app.js dentro del EventListener del submit hay que instanciar la clase UI y utilizarla con addANewBook para postear
+	const ui = new UI;
+	ui.addNewBook(formData);
+ahora queremos que se borre el formulario cuando enviamos los datos asi que dentro de clearBookForm hacemos reset en el formulario
+	document.getElementById('book-form').reset();
+	dentro del addANewBook() añadimos el metodo clearBookForm
+		this.clearBookForm();
+para ver los libros que tenemos guardados en pantalla vamos a rellenar el método render books
+	lo primero que tendremos que hacer es consultar los que tenemos. Ya teniamos getBooks en bookService, así que realizamos la consulta asincrona, lo guardamos en una constante y de momento lo mostramos por consola
+		const books = await bookService.getBooks();
+		console.log(books);
+	como se debe realizar nada más cargar la página en app.js una vez el dom haya cargado, instanciamos el UI y ejecutamos renderBooks.
+		document.addEventListener('DOMContentLoaded', () => {
+			const ui = new UI();
+			ui.renderBooks();
+		});
+Ahora ya sabemos que los datos se pasan correctamente pero queremos pintarlos, habiamos dejado 8 columnas con el id books-cards, lo seleccionamos por id
+	nos aseguramos que esté vacío y empezamos a recorrer los libros y por cada uno vamos creando la tarjeta con js y la llenamos de dados
+	    async renderBooks(){
+		const books = await bookService.getBooks();
+		console.log(books);
+		const booksCardContainer = document.getElementById('books-cards');
+		booksCardContainer.innerHTML = ''; //para asegurarnos que el contenedor esté vacío
+		books.forEach(book => {
+		  const div = document.createElement('div');
+		  div.className = '';
+		  div.innerHTML = `
+		  <div class="card m-2">
+		    <div class="row">
+		        <div class="col-md-4">
+		            <img src="${book.imagePath}" class="img-fluid" alt="">
+		        </div>
+		        <div class="col-md-8">
+		            <div class="card-block px-2">
+		                <h4 class="card-title">${book.title}</h4>
+		                <p class="card-text">${book.author}</p>
+		                <a href="#" class="btn btn-danger delete" _id="${book._id}">X</a>
+		            </div>
+		        </div>
+		    </div>
+		    <div class="card-footer">
+		      ${format(book.created_at)}
+		    </div>
+		  </div>
+		  `;
+		});
+	      }	
+	para que la fecha salga decente tenemos que importar la biblioteca que ya habiamos instalado, timeago.js
+		import {format} from 'timeago.js';
+	sólo nos queda que cada vez que recorra y genere una nueva tarjeta la añada al contenido
+		bookCardContainer.appendChild(div); // div es la todo el contenido anterior que lo hemos guardado así en la constante
+las imágenes no se ven porque estamos en servidor de desarrollo 8080 y ahi no esta la carpeta de uploads de las imágenes por lo tanto para solicitar las imágenes lo haremos al puerto 3000
+	<img src="http://localhost:3000${book.imagePath}" class="img-fluid" alt="">
+	--> esto nos funciona para desarrollo pero en produccion habrá que modificarlo porque el puerto no sera ese
+para que al añadir un libro se vea directamente en la página tendremos que añadir el método rederBooks a AddANewBook
+
+https://www.youtube.com/watch?v=wS2xCdbsnyg
+COMO ELIMINAR DATOS
+	       
