@@ -648,5 +648,56 @@ las imágenes no se ven porque estamos en servidor de desarrollo 8080 y ahi no e
 para que al añadir un libro se vea directamente en la página tendremos que añadir el método rederBooks a AddANewBook
 
 https://www.youtube.com/watch?v=wS2xCdbsnyg
-COMO ELIMINAR DATOS
-	       
+COMO ELIMINAR DATOS, MENSAJES Y COMPILAR APP
+
+en apps tenemos que hacer que cada vez que hagamos un click en las "x" se abra el evento, de momento hacemos un console.log(click) para ver si funciona
+	para eso seleccionamos por id las cards y hacemos un if cuando tiene la clase delete
+		document.getElementById('books-cards')
+			.addEventListener('click', e => {
+				if (e.target.classList.contains('delete')){
+					console.log('deleting')
+				}
+			});
+	como a cada elemento le hemos puesto el _id podemos capturar ese id
+		console.log(e.target.getAttribute('_id'))
+	utilizaremos la clase UI y con el bookservice eliminaremos el libro en deletebook en async pasandole el libro
+		async deleteBook (bookId){
+			await bookService.deleteBook(bookId);
+			this.renderBooks();
+		}
+	ahora podemos desde el app quitamos el console.log del id y podemos instanciar la clase y utilizar el método deleteBook
+		const ui = new UI()
+		ui.deleteBook(e.target.getAttribute('_id'))
+	por último añadimos el prevent default al final del listener
+		e.preventDefault();
+ya estamos borrando los datos de mongodb pero falta eliminar las imágenes que se están quedando en la carpeta uploads, las eliminaremos con el imagepad a través del módulo fs
+	en books.js requerimos el metodo unlink del módulo fs (como no soporta promesas, utilizamos el fs-extra)
+		const {unlink} = require(fs-extra);	
+	importamos el módulo path para la dirección
+		const path = require('path');
+	en router delete usamos el unlink en la carpeta uploads y concatenamos con el imagePath
+		unlink(path.resolve('./backend/public' + book.imagePath))
+ahora sería interesante mostrar un mensaje por pantalla con la acción que se ha realizado
+--> en el frontent en la clase UI rellenamos el render message en el que crearemos un div le daremos el mensaje, color del mensaje y los segundos para que desaparezca)
+	renderMessage(message, colorMessage, secondsToRemove){
+		const div = document.createElement('div');
+		div.classname = 'alert alert-${colorMessage};
+	}
+	-->como lo queremos crear encima del formulario seleccionaremos el col-md-4
+		const container = document.querySelector('.col-md-4');
+		const bookForm = document.querySelector('#book-form');
+	-->metemos un div con el texto que pasemos
+		div.appendChild(document.createTextNode(message));
+
+	container.insertBefore(div,bookForm); //el que y antes de que elemento
+	setTimeiut(() => {
+		document.querySelector('.message').remove();
+		},secondsToRemove);
+	-->con esta clase hemos creado un div con su color y su clase, luego seleccionamos donde queremos ponerla y por último cuanto tiempo estará visible, ahora solo hay que usar el método desde la app
+	en addANewBook  ui.rederMessage('New Book Added', 'success', 3000)
+	en deleteBook ui.renderMessage('BookDeleted, 'danger', 3000)
+podemos dar estilo a la app en app.css, por ejemplo body{background:#f5f6fa;}
+Para pasar la app a modo producción y que nos de el codigo compilado cancelamos con ctrl+c las terminales. entramos en webpack.config y cambiamos de mode:development y npm run build
+
+
+lo dejamos de momento todo funcionando perfecto en modo development con npm run dev + npm run server:dev, pero no acaba de funcionar en el puerto 3000 con npm run build en modo production

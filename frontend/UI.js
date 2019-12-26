@@ -41,8 +41,26 @@ class UI{
 	clearBookFrom(){
         document.getElementById('book-form').reset();
     }
-	renderMessage(){
+    renderMessage(message, colorMessage, secondsToRemove) {
+        // Creating a div
+        const div = document.createElement('div');
+        // Styling the div
+        div.className = `alert alert-${colorMessage} message`;
+        // Adding Text to the div
+        div.appendChild(document.createTextNode(message));
+        // Puting in the documnet
+        const container = document.querySelector('.col-md-4');
+        const bookForm = document.querySelector('#book-form');
+        container.insertBefore(div, bookForm);
+        // Removing the div after some secconds
+        setTimeout(() => {
+          document.querySelector('.message').remove();
+        }, secondsToRemove);
+      }
+	async deleteBook(bookId){
+        await bookService.deleteBook(bookId);
+        this.renderBooks();
     }
-	deleteBook(){}
+       
 }
 export default UI;
