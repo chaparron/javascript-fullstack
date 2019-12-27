@@ -701,3 +701,7 @@ Para pasar la app a modo producción y que nos de el codigo compilado cancelamos
 
 
 lo dejamos de momento todo funcionando perfecto en modo development con npm run dev + npm run server:dev, pero no acaba de funcionar en el puerto 3000 con npm run build en modo production
+	--> el problema es que en el index.js ponemos que se requiere el dotenv para las variables si estamos en modo development, entonces la variable del conexion en mongoose, dentro del archivo database no la reconocía, hemos tenido que añadir ' || "mongodb://localhost/javascriptdb"'
+
+https://www.youtube.com/watch?v=nm7gWyZvdVU&t=486s
+DESPLIEGUE DE LA APP
