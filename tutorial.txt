@@ -705,3 +705,8 @@ lo dejamos de momento todo funcionando perfecto en modo development con npm run 
 
 https://www.youtube.com/watch?v=nm7gWyZvdVU&t=486s
 DESPLIEGUE DE LA APP
+
+Quitamos los localhosts
+en el gitignore además del .env y el node_modules añadimos el frontend/public ya que se generará sola
+añadimos el  "postinstall": "npm run build"
+
